@@ -66,7 +66,7 @@ a{color:inherit;text-decoration:none}
 }
 
 .scene__title{
-  position:absolute;top:86px;left:44px;z-index:30;
+  position:absolute;top:60px;left:34px;z-index:30;
   max-width:330px;
 }
 .scene__eyebrow{
@@ -79,7 +79,7 @@ a{color:inherit;text-decoration:none}
 }
 .scene__tagline{font-size:15px;color:var(--muted);margin-top:10px;max-width:300px}
 .scene__cue{
-  position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
   z-index:30;font-size:13px;color:var(--muted);letter-spacing:2px;
   display:flex;flex-direction:column;align-items:center;gap:6px;
   animation:cue 2.4s ease-in-out infinite;
@@ -87,12 +87,15 @@ a{color:inherit;text-decoration:none}
 @keyframes cue{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
 
 .scene__viewport{
+  position:relative;
+  width:1320px;height:1060px;
   perspective:1200px;
-  width:100%;height:100%;
-  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transform:scale(var(--scene-scale,1));
+  transform-origin:center center;
 }
 #stage{
-  position:relative;
+  position:absolute;top:225px;left:0;
   width:1320px;height:700px;
   transform-style:preserve-3d;
   transition:transform .35s ease-out;
@@ -373,17 +376,16 @@ a{color:inherit;text-decoration:none}
 .modal .note{font-size:12px;color:var(--muted);margin-top:14px}
 
 /* ---------- 响应式与动效降级 ---------- */
-@media (max-width:1400px){.scene__viewport{transform:scale(.86)}}
-@media (max-width:1200px){.scene__viewport{transform:scale(.72)}}
 @media (max-width:960px){
   .scene{height:auto;min-height:0;padding:120px 22px 60px;flex-direction:column}
+  .scene__viewport{width:100%;height:auto;perspective:none;transform:none !important}
   .scene__title{position:static;max-width:none;text-align:center;margin-bottom:40px}
-  .scene__quote{border-left:none;text-align:center;padding-left:0}
-  .scene__viewport{perspective:none;display:block}
   #stage{
+    position:static;
     width:100%;height:auto;transform:none !important;
     display:flex;flex-wrap:wrap;gap:16px;justify-content:center;
   }
+  .scene__cue{position:static;margin-top:26px;animation:none}
   .shell{position:static;transform:none;width:100%;max-width:420px;height:auto}
   .shell--work{width:100%;max-width:420px}
   .float{animation:none}
@@ -424,13 +426,13 @@ a{color:inherit;text-decoration:none}
     <div class="scene__blob scene__blob--2"></div>
     <div class="scene__blob scene__blob--3"></div>
 
-    <div class="scene__title">
-      <p class="scene__eyebrow">山西大学 · 软件工程</p>
-      <h1 class="scene__name">程柯</h1>
-      <p class="scene__tagline">🤖 AI 工具爱好者 · AI / Web / 网安</p>
-    </div>
-
     <div class="scene__viewport">
+      <div class="scene__title">
+        <p class="scene__eyebrow">山西大学 · 软件工程</p>
+        <h1 class="scene__name">程柯</h1>
+        <p class="scene__tagline">🤖 AI 工具爱好者 · AI / Web / 网安</p>
+      </div>
+
       <div id="stage">
         <!-- 个人介绍大卡 -->
         <div class="shell shell--intro" style="--x:-450px;--y:-55px;--z:120px;--w:280px;--h:280px;--delay:-2s;--grad:linear-gradient(150deg,#E8EEFF,#C9D6FF);--shadow-c:rgba(124,142,240,.38)">
@@ -537,9 +539,8 @@ a{color:inherit;text-decoration:none}
           </div>
         </div>
       </div>
+      <div class="scene__cue">向下探索 ↓</div>
     </div>
-
-    <div class="scene__cue">向下探索 ↓</div>
   </section>
 
   <!-- ======== 性格画像 ======== -->
@@ -654,6 +655,16 @@ a{color:inherit;text-decoration:none}
   var coarse = window.matchMedia('(pointer: coarse)').matches;
   var stage = document.getElementById('stage');
   var cards = document.querySelectorAll('.card');
+
+  /* 整体缩放：不同屏幕尺寸下，标题与卡片整体等比缩放，互不重叠 */
+  var viewport = document.querySelector('.scene__viewport');
+  function setSceneScale(){
+    if (window.innerWidth < 960) { viewport.style.setProperty('--scene-scale', '1'); return; }
+    var s = Math.min(1, (window.innerWidth - 40) / 1320, (window.innerHeight - 40) / 1060);
+    viewport.style.setProperty('--scene-scale', Math.max(0.5, s).toFixed(4));
+  }
+  setSceneScale();
+  window.addEventListener('resize', setSceneScale);
 
   /* 整场视差：鼠标移动，空间轻微转动 */
   if (!reduce && !coarse) {
